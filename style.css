@@ -357,3 +357,68 @@ button#edit_btnLocalizacao {
 button#edit_btnLocalizacao:hover {
     background-color: #1b5e20; /* Verde mais escuro no hover */
 }
+/* =================================
+   Estilos da Galeria de Fotos no Modal
+==================================== */
+.fotos-gerenciador {
+    margin-bottom: 20px;
+}
+
+#fotos-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.foto-miniatura {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+.foto-miniatura img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #ddd;
+}
+
+.btn-apagar-foto {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 24px;
+    height: 24px;
+    background-color: #d32f2f;
+    color: white;
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    padding: 0;
+}
+
+.btn-apagar-foto:hover {
+    background-color: #c62828;
+}
+
+/* Estilo para o novo campo de upload no modal */
+#edit_fotos {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #cccccc;
+    box-sizing: border-box;
+    font-size: 14px;
+    color: #333;
+}
+/* A CHAVE EXTRA QUE ESTAVA AQUI FOI REMOVIDA */

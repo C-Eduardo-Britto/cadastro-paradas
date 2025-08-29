@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Parada</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h2>Cadastro de Parada</h2>
+        <a href="consultar.html" class="consulta-button">Consultar Paradas Cadastradas →</a>
+        
+        <form id="paradaForm">
+            <div class="section-title">Localização GPS</div>
+            <button type="button" id="btnLocalizacao">Capturar Coordenadas GPS</button>
+            <div class="form-row">
+                 <div class="form-group">
+                    <label for="latitude">Latitude:</label>
+                    <input type="text" id="latitude" name="latitude" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="longitude">Longitude:</label>
+                    <input type="text" id="longitude" name="longitude" readonly>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="nome">Nome do Posto / Ponto de Parada: <span class="required-asterisk">*</span></label>
+                <input type="text" id="nome" name="nome" required>
+            </div>
+
+            <div class="form-group">
+                <label for="nome_contato">Nome de Contato: <span class="required-asterisk">*</span></label>
+                <input type="text" id="nome_contato" name="nome_contato" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telefone">Telefone de Contato: <span class="required-asterisk">*</span></label>
+                <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
+            </div>
+
+            <div class="section-title">Endereço</div>
+            <div class="form-group">
+                <label for="cep">CEP:</label>
+                <input type="text" id="cep" name="cep" placeholder="00000-000">
+            </div>
+
+            <div class="form-group">
+                <label for="logradouro">Logradouro (Rua/Avenida):</label>
+                <input type="text" id="logradouro" name="logradouro">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="numero">Número:</label>
+                    <input type="text" id="numero" name="numero">
+                </div>
+                <div class="form-group">
+                    <label for="bairro">Bairro:</label>
+                    <input type="text" id="bairro" name="bairro">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cidade">Cidade:</label>
+                    <input type="text" id="cidade" name="cidade">
+                </div>
+                <div class="form-group">
+                    <label for="uf">UF:</label>
+                    <input type="text" id="uf" name="uf" maxlength="2">
+                </div>
+            </div>
+
+            <div class="section-title">Estrutura do Local</div>
+            <div class="checklist">
+                <div class="checklist-item-radio">
+                    <span>Banheiros:</span>
+                    <div class="radio-options">
+                        <label><input type="radio" name="banheiros" value="Gratuito"> Gratuito</label>
+                        <label><input type="radio" name="banheiros" value="Pago"> Pago</label>
+                    </div>
+                </div>
+                <div class="checklist-item-radio">
+                    <span>Borracharia 24h:</span>
+                    <div class="radio-options">
+                        <label><input type="radio" name="borracharia" value="Sim"> Sim</label>
+                        <label><input type="radio" name="borracharia" value="Não"> Não</label>
+                        <label><input type="radio" name="borracharia" value="Nenhuma"> Sem borracharia</label>
+                    </div>
+                </div>
+                <label><input type="checkbox" value="Restaurante"> Restaurante</label>
+                <label><input type="checkbox" value="Oficina"> Oficina</label>
+                <label><input type="checkbox" value="Conveniência"> Conveniência</label>
+                <label><input type="checkbox" value="Estacionamento segregado"> Estacionamento segregado</label>
+                <label><input type="checkbox" value="Câmeras de segurança"> Câmeras de segurança</label>
+                <label><input type="checkbox" value="Pousada"> Pousada</label>
+            </div>
+
+            <div class="section-title">Fotos do Local</div>
+            <div class="form-group">
+                <label for="fotos">Adicionar fotos:</label>
+                <input type="file" id="fotos" name="fotos" multiple accept="image/*">
+            </div>
+            <div class="section-title">Observações</div>
+            <div class="form-group">
+                <textarea id="observacoes" name="observacoes" rows="3" placeholder="Ex: adicione outras informações importantes"></textarea>
+            </div>
+            <div id="mensagem"></div>
+            <div class="action-buttons">
+                <button type="button" id="limparFormulario">Limpar Formulário</button>
+                <button type="submit">Salvar Parada</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -44,7 +44,7 @@ h2 {
 }
 
 /* =================================
-   Estilos do Formulário (index.html)
+   Estilos do Formulário
 ==================================== */
 .form-group {
     display: flex;
@@ -59,9 +59,8 @@ h2 {
     font-size: 14px;
 }
 
-/* NOVO ESTILO PARA O ASTERISCO */
 .required-asterisk {
-    color: #d32f2f; /* Vermelho */
+    color: #d32f2f;
     margin-left: 3px;
     font-weight: bold;
 }
@@ -319,47 +318,6 @@ button#limparFormulario:hover {
     color: #000;
 }
 
-#fotos-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-#fotos-container img {
-    border-radius: 8px;
-    object-fit: cover;
-    width: 100px;
-    height: 100px;
-}
-
-
-/* =================================
-   Responsividade
-==================================== */
-@media (max-width: 450px) {
-    .form-row .form-group {
-        min-width: 100%;
-    }
-}
-
-@media (min-width: 600px) {
-    .action-buttons {
-        flex-direction: row;
-    }
-}
-
-/* Estilo para o botão de GPS no modal de edição */
-button#edit_btnLocalizacao {
-    background-color: #2e7d32; /* Fundo verde */
-    margin-bottom: 15px;      /* Espaçamento abaixo do botão */
-}
-
-button#edit_btnLocalizacao:hover {
-    background-color: #1b5e20; /* Verde mais escuro no hover */
-}
-/* =================================
-   Estilos da Galeria de Fotos no Modal
-==================================== */
 .fotos-gerenciador {
     margin-bottom: 20px;
 }
@@ -411,7 +369,6 @@ button#edit_btnLocalizacao:hover {
     background-color: #c62828;
 }
 
-/* Estilo para o novo campo de upload no modal */
 #edit_fotos {
     width: 100%;
     padding: 10px 12px;
@@ -421,4 +378,49 @@ button#edit_btnLocalizacao:hover {
     font-size: 14px;
     color: #333;
 }
-/* A CHAVE EXTRA QUE ESTAVA AQUI FOI REMOVIDA */
+
+/* CORREÇÃO PARA OS BOTÕES DE GPS NO MODAL */
+.modal-content .action-buttons {
+    display: flex;
+    flex-direction: row; /* Garante que fiquem lado a lado */
+    margin-bottom: 15px; /* Adiciona o espaço que o botão único tinha */
+}
+
+.modal-content .action-buttons button {
+    flex-grow: 1; /* Faz os botões dividirem o espaço igualmente */
+    width: auto;
+    margin-bottom: 0;
+}
+
+button#edit_btnLocalizacao {
+    background-color: #2e7d32;
+}
+
+button#edit_btnLocalizacao:hover {
+    background-color: #1b5e20;
+}
+
+button#edit_btnZerarGps {
+    background-color: #fbc02d;
+    color: #333;
+}
+
+button#edit_btnZerarGps:hover {
+    background-color: #f9a825;
+}
+
+
+/* =================================
+   Responsividade
+==================================== */
+@media (max-width: 450px) {
+    .form-row .form-group {
+        min-width: 100%;
+    }
+}
+
+@media (min-width: 600px) {
+    .action-buttons {
+        flex-direction: row;
+    }
+}

@@ -306,3 +306,13 @@ button#edit_btnZerarGps:hover {
     padding-bottom: 5px;
     border-bottom: 1px solid #eee; /* Adiciona uma linha separadora sutil */
 }
+
+/* Correção final para a cor do botão de GPS no Modal */
+.modal-content .action-buttons button#edit_btnLocalizacao {
+    background-color: #2e7d32; /* Fundo verde padrão */
+    color: white;             /* Fonte branca */
+}
+
+.modal-content .action-buttons button#edit_btnLocalizacao:hover {
+    background-color: #1b5e20; /* Verde mais escuro no hover */
+}

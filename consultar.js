@@ -1,58 +1,52 @@
-// =================================================================================
-// CONFIGURAÇÃO E VARIÁVEIS GLOBAIS
-// =================================================================================
+// 🔑 Suas credenciais do Supabase
 const SUPABASE_URL = "https://onworwlttvwhjgohgnqi.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ud29yd2x0dHZ3aGpnb2hnbnFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0Nzk0MDksImV4cCI6MjA3MjA1NTQwOX0.rVtUIA_SK7O4cpXKO0mHKwMuhBWJ2qdsA7aLwNdhmtg";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const SENHA_APAGAR = "apague";
 
+// Array global para gerenciar fotos a serem apagadas na edição
 let fotosParaApagar = [];
 
-// =================================================================================
-// LÓGICA PRINCIPAL - EXECUTADA APENAS QUANDO A PÁGINA ESTÁ PRONTA
-// =================================================================================
+// --- FUNÇÕES REUTILIZÁVEIS ---
+async function uploadFotos(files) {
+    const urlsDasFotos = [];
+    const nomeDoBucket = 'fotos-paradas';
+    for (const file of Array.from(files)) {
+        const nomeDoArquivo = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const { error } = await supabaseClient.storage.from(nomeDoBucket).upload(nomeDoArquivo, file);
+        if (error) { console.error('Erro no upload da foto:', error); throw new Error(`Falha no upload do arquivo: ${file.name}`); }
+        const { data: { publicUrl } } = supabaseClient.storage.from(nomeDoBucket).getPublicUrl(nomeDoArquivo);
+        urlsDasFotos.push(publicUrl);
+    }
+    return urlsDasFotos;
+}
+function mascaraTelefone(e) { let v = e.target.value.replace(/\D/g, ""); if (v.length > 10) e.target.value = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3"); else e.target.value = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3"); }
+async function buscaCep(e) { let v = e.target.value.replace(/\D/g, ""); e.target.value = v.replace(/^(\d{5})(\d{0,3}).*/, "$1-$2"); if (v.length === 8) { try { const response = await fetch(`https://viacep.com.br/ws/${v}/json/`); const data = await response.json(); if (!data.erro) { document.getElementById("edit_logradouro").value = data.logradouro || ""; document.getElementById("edit_bairro").value = data.bairro || ""; document.getElementById("edit_cidade").value = data.localidade || ""; document.getElementById("edit_uf").value = data.uf || ""; document.getElementById("edit_numero").focus(); } else { alert("CEP não encontrado."); } } catch (err) { console.error("Erro ao buscar CEP:", err); alert("Não foi possível buscar o CEP."); } } }
+function mascaraUf(e) { e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase(); }
+function aplicarMascarasNoModal() { document.getElementById('edit_telefone').addEventListener('input', mascaraTelefone); document.getElementById('edit_cep').addEventListener('input', buscaCep); document.getElementById('edit_uf').addEventListener('input', mascaraUf); }
+
+// --- LÓGICA DO MODAL ---
+const modal = document.getElementById('editModal');
+const editForm = document.getElementById('editForm');
+const modalCloseButton = document.querySelector('.modal-close');
+
+function fecharModal() {
+    modal.style.display = 'none';
+    editForm.innerHTML = '';
+    fotosParaApagar = [];
+}
+
+modalCloseButton.addEventListener('click', fecharModal);
+window.addEventListener('click', function(event) { if (event.target == modal) { fecharModal(); } });
+
+// --- LÓGICA PRINCIPAL DA PÁGINA DE CONSULTA ---
 document.addEventListener('DOMContentLoaded', function() {
-
-    // --- SELEÇÃO DOS ELEMENTOS DO MODAL (AGORA DENTRO DO DOMCONTENTLOADED) ---
-    const modal = document.getElementById('editModal');
-    const editForm = document.getElementById('editForm');
-    const modalCloseButton = document.querySelector('.modal-close');
-
-    // --- FUNÇÕES REUTILIZÁVEIS ---
-    async function uploadFotos(files) {
-        const urlsDasFotos = [];
-        const nomeDoBucket = 'fotos-paradas';
-        for (const file of Array.from(files)) {
-            const nomeDoArquivo = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-            const { error } = await supabaseClient.storage.from(nomeDoBucket).upload(nomeDoArquivo, file);
-            if (error) { console.error('Erro no upload da foto:', error); throw new Error(`Falha no upload do arquivo: ${file.name}`); }
-            const { data: { publicUrl } } = supabaseClient.storage.from(nomeDoBucket).getPublicUrl(nomeDoArquivo);
-            urlsDasFotos.push(publicUrl);
-        }
-        return urlsDasFotos;
-    }
-    function mascaraTelefone(e) { let v = e.target.value.replace(/\D/g, ""); if (v.length > 10) e.target.value = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3"); else e.target.value = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3"); }
-    async function buscaCep(e) { let v = e.target.value.replace(/\D/g, ""); e.target.value = v.replace(/^(\d{5})(\d{0,3}).*/, "$1-$2"); if (v.length === 8) { try { const response = await fetch(`https://viacep.com.br/ws/${v}/json/`); const data = await response.json(); if (!data.erro) { document.getElementById("edit_logradouro").value = data.logradouro || ""; document.getElementById("edit_bairro").value = data.bairro || ""; document.getElementById("edit_cidade").value = data.localidade || ""; document.getElementById("edit_uf").value = data.uf || ""; document.getElementById("edit_numero").focus(); } else { alert("CEP não encontrado."); } } catch (err) { console.error("Erro ao buscar CEP:", err); alert("Não foi possível buscar o CEP."); } } }
-    function mascaraUf(e) { e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase(); }
-    function aplicarMascarasNoModal() { document.getElementById('edit_telefone').addEventListener('input', mascaraTelefone); document.getElementById('edit_cep').addEventListener('input', buscaCep); document.getElementById('edit_uf').addEventListener('input', mascaraUf); }
-
-    // --- FUNÇÕES DO MODAL ---
-    function fecharModal() {
-        modal.style.display = 'none';
-        editForm.innerHTML = '';
-        fotosParaApagar = [];
-    }
-    modalCloseButton.addEventListener('click', fecharModal);
-    window.addEventListener('click', function(event) { if (event.target == modal) { fecharModal(); } });
-
-    // --- LÓGICA DA PÁGINA DE CONSULTA ---
+    
     async function carregarParadas() {
         const container = document.getElementById('lista-paradas');
         container.innerHTML = '<p>Carregando registros...</p>';
-
-        const { data, error } = await supabaseClient
-            .from('paradas').select('*').order('criado_em', { ascending: false });
+        const { data, error } = await supabaseClient.from('paradas').select('*').order('criado_em', { ascending: false });
 
         if (error) {
             container.innerHTML = `<p style="color: red;">Erro ao carregar os registros: ${error.message}</p>`;
@@ -75,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <p><strong>Endereço:</strong> ${parada.logradouro || ''}, ${parada.numero || ''} - ${parada.cidade || ''}/${parada.uf || ''}</p>
                 <p><strong>Checklist:</strong> ${checklistTexto}</p>
                 <div class="botoes-registro">
+                    <button class="btn-localizacao" data-id="${parada.id}">Localização</button>
                     <button class="btn-editar" data-id="${parada.id}">Editar</button>
                     <button class="btn-apagar" data-id="${parada.id}">Apagar</button>
                 </div>
@@ -82,6 +77,12 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(div);
         });
 
+        // Adiciona os eventos de clique para os botões recém-criados
+        document.querySelectorAll('.btn-localizacao').forEach(button => {
+            button.addEventListener('click', () => {
+                window.open(`mapa.html?id=${button.dataset.id}`, '_blank');
+            });
+        });
         document.querySelectorAll('.btn-editar').forEach(button => {
             button.addEventListener('click', () => abrirModalEdicao(button.dataset.id));
         });
@@ -103,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="section-title">Localização GPS</div>
             <div class="action-buttons" style="margin-bottom: 15px;">
                 <button type="button" id="edit_btnLocalizacao">Capturar Coordenadas GPS</button>
-                <button type="button" id="edit_btnZerarGps" style="background-color: #fbc02d; color: #333;">Zerar GPS</button>
+                <button type="button" id="edit_btnZerarGps">Zerar GPS</button>
             </div>
             <div class="form-row">
                  <div class="form-group"><label for="edit_latitude">Latitude:</label><input type="text" id="edit_latitude" value="${data.latitude || ''}"></div>
@@ -134,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('edit_btnZerarGps').addEventListener('click', () => { document.getElementById("edit_latitude").value = ""; document.getElementById("edit_longitude").value = ""; alert("Campos de GPS zerados. Salve as alterações para confirmar."); });
         aplicarMascarasNoModal();
 
-        editForm.onsubmit = async (e) => { e.preventDefault(); await salvarEdicao(data.id, data.fotos_urls); };
+        editForm.onsubmit = async (e) => { e.preventDefault(); await salvarEdicao(id, data.fotos_urls); };
         modal.style.display = 'flex';
     }
 
@@ -186,6 +187,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function apagarParada(id) { const senha = prompt("Para apagar, digite a senha de segurança:"); if (senha === null) return; if (senha === SENHA_APAGAR) { if (confirm("Você tem certeza? Esta ação não pode ser desfeita.")) { const { error } = await supabaseClient.from('paradas').delete().eq('id', id); if (error) { alert("Erro ao apagar."); console.error(error); } else { alert("Registro apagado."); carregarParadas(); } } } else { alert("Senha incorreta."); } }
 
-    // Inicia o carregamento dos registros
     carregarParadas();
 });

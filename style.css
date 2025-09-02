@@ -76,7 +76,7 @@ textarea {
     box-sizing: border-box;
     font-size: 14px;
     color: #333;
-    text-transform: uppercase; /* ADICIONADO: Transforma o texto em maiúsculas visualmente */
+    text-transform: uppercase;
 }
 
 input[readonly] {
@@ -160,12 +160,22 @@ button {
     transition: background-color 0.3s ease;
 }
 
-button#btnLocalizacao, button#edit_btnLocalizacao {
+button:disabled {
+    background-color: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+button:disabled:hover {
+    background-color: #cccccc !important;
+}
+
+button#btnLocalizacao {
     background-color: #2e7d32;
     margin-bottom: 15px;
 }
 
-button#btnLocalizacao:hover, button#edit_btnLocalizacao:hover {
+button#btnLocalizacao:hover {
     background-color: #1b5e20;
 }
 
@@ -223,174 +233,53 @@ button#limparFormulario:hover {
     margin-bottom: 15px;
     background-color: #f9f9f9;
 }
-.registro h3 {
-    margin-top: 0;
-    color: #1b5e20;
-}
-.registro p {
-    margin: 5px 0;
-    word-break: break-word;
-}
-.registro strong {
-    color: #2e7d32;
-}
-.registro .botoes-registro {
-    margin-top: 15px;
-    display: flex;
-    gap: 10px;
-}
-
-.registro .botoes-registro button {
-    padding: 8px 15px;
-    font-size: 14px;
-    flex-grow: 1;
-}
-
-.registro .botoes-registro button:not(.btn-apagar) {
-    background-color: #2e7d32;
-}
-.registro .botoes-registro button:not(.btn-apagar):hover {
-    background-color: #1b5e20;
-}
-
-.registro .botoes-registro .btn-apagar {
-    background-color: #d32f2f;
-}
-.registro .botoes-registro .btn-apagar:hover {
-    background-color: #c62828;
-}
+.registro h3 { margin-top: 0; color: #1b5e20; }
+.registro p { margin: 5px 0; word-break: break-word; }
+.registro strong { color: #2e7d32; }
+.registro .botoes-registro { margin-top: 15px; display: flex; gap: 10px; }
+.registro .botoes-registro button { padding: 8px 15px; font-size: 14px; flex-grow: 1; }
+.registro .botoes-registro button:not(.btn-apagar) { background-color: #2e7d32; }
+.registro .botoes-registro button:not(.btn-apagar):hover { background-color: #1b5e20; }
+.registro .botoes-registro .btn-apagar { background-color: #d32f2f; }
+.registro .botoes-registro .btn-apagar:hover { background-color: #c62828; }
 
 /* =================================
    Estilos do Modal de Edição
 ==================================== */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.modal-content {
-    background-color: #fff;
-    padding: 20px 25px;
-    border-radius: 15px;
-    width: 100%;
-    max-width: 550px;
-    position: relative;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.modal-header h2 {
-    margin: 0;
-    padding: 0;
-    font-size: 22px;
-}
-
-.modal-close {
-    color: #aaa;
-    font-size: 32px;
-    font-weight: bold;
-    border: none;
-    background: none;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-}
-.modal-close:hover,
-.modal-close:focus {
-    color: #000;
-}
+.modal-overlay { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+.modal-content { background-color: #fff; padding: 20px 25px; border-radius: 15px; width: 100%; max-width: 550px; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.modal-header h2 { margin: 0; padding: 0; font-size: 22px; }
+.modal-close { color: #aaa; font-size: 32px; font-weight: bold; border: none; background: none; cursor: pointer; padding: 0; line-height: 1; }
+.modal-close:hover, .modal-close:focus { color: #000; }
 
 .modal-content .action-buttons {
     display: flex;
     flex-direction: row;
     margin-bottom: 15px;
 }
-
 .modal-content .action-buttons button {
     flex-grow: 1;
-    width: auto;
+    width: 50%;
     margin-bottom: 0;
 }
-
+button#edit_btnLocalizacao {
+    margin-bottom: 0;
+}
 button#edit_btnZerarGps {
     background-color: #fbc02d;
     color: #333;
 }
-
 button#edit_btnZerarGps:hover {
     background-color: #f9a825;
 }
 
-.fotos-gerenciador {
-    margin-bottom: 20px;
-}
-
-#fotos-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 15px;
-    padding-top: 10px;
-    border-top: 1px solid #eee;
-}
-
-.foto-miniatura {
-    position: relative;
-    width: 100px;
-    height: 100px;
-}
-
-.foto-miniatura img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid #ddd;
-}
-
-.btn-apagar-foto {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 24px;
-    height: 24px;
-    background-color: #d32f2f;
-    color: white;
-    border: 2px solid white;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 1;
-    padding: 0;
-}
-
-.btn-apagar-foto:hover {
-    background-color: #c62828;
-}
-
+.fotos-gerenciador { margin-bottom: 20px; }
+#fotos-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; padding-top: 10px; border-top: 1px solid #eee; }
+.foto-miniatura { position: relative; width: 100px; height: 100px; }
+.foto-miniatura img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 2px solid #ddd; }
+.btn-apagar-foto { position: absolute; top: -5px; right: -5px; width: 24px; height: 24px; background-color: #d32f2f; color: white; border: 2px solid white; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; line-height: 1; padding: 0; }
+.btn-apagar-foto:hover { background-color: #c62828; }
 
 /* =================================
    Responsividade
@@ -400,20 +289,10 @@ button#edit_btnZerarGps:hover {
         min-width: 100%;
     }
 }
-
 @media (min-width: 600px) {
     .action-buttons {
         flex-direction: row;
     }
 }
 
-/* Estilo para botões inativos/desabilitados na lista de registros */
-.registro .botoes-registro button:disabled {
-    background-color: #cccccc; /* Fundo cinza */
-    cursor: not-allowed;     /* Cursor de "proibido" */
-    opacity: 0.7;            /* Levemente transparente */
-}
-
-.registro .botoes-registro button:disabled:hover {
-    background-color: #cccccc; /* Garante que a cor não mude no hover */
-}
+/* FIM DO ARQUIVO CSS */

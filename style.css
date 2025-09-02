@@ -76,6 +76,7 @@ textarea {
     box-sizing: border-box;
     font-size: 14px;
     color: #333;
+    text-transform: uppercase; /* ADICIONADO: Transforma o texto em maiúsculas visualmente */
 }
 
 input[readonly] {
@@ -159,12 +160,12 @@ button {
     transition: background-color 0.3s ease;
 }
 
-button#btnLocalizacao {
+button#btnLocalizacao, button#edit_btnLocalizacao {
     background-color: #2e7d32;
     margin-bottom: 15px;
 }
 
-button#btnLocalizacao:hover {
+button#btnLocalizacao:hover, button#edit_btnLocalizacao:hover {
     background-color: #1b5e20;
 }
 
@@ -318,6 +319,27 @@ button#limparFormulario:hover {
     color: #000;
 }
 
+.modal-content .action-buttons {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 15px;
+}
+
+.modal-content .action-buttons button {
+    flex-grow: 1;
+    width: auto;
+    margin-bottom: 0;
+}
+
+button#edit_btnZerarGps {
+    background-color: #fbc02d;
+    color: #333;
+}
+
+button#edit_btnZerarGps:hover {
+    background-color: #f9a825;
+}
+
 .fotos-gerenciador {
     margin-bottom: 20px;
 }
@@ -367,46 +389,6 @@ button#limparFormulario:hover {
 
 .btn-apagar-foto:hover {
     background-color: #c62828;
-}
-
-#edit_fotos {
-    width: 100%;
-    padding: 10px 12px;
-    border-radius: 8px;
-    border: 1px solid #cccccc;
-    box-sizing: border-box;
-    font-size: 14px;
-    color: #333;
-}
-
-/* CORREÇÃO PARA OS BOTÕES DE GPS NO MODAL */
-.modal-content .action-buttons {
-    display: flex;
-    flex-direction: row; /* Garante que fiquem lado a lado */
-    margin-bottom: 15px; /* Adiciona o espaço que o botão único tinha */
-}
-
-.modal-content .action-buttons button {
-    flex-grow: 1; /* Faz os botões dividirem o espaço igualmente */
-    width: auto;
-    margin-bottom: 0;
-}
-
-button#edit_btnLocalizacao {
-    background-color: #2e7d32;
-}
-
-button#edit_btnLocalizacao:hover {
-    background-color: #1b5e20;
-}
-
-button#edit_btnZerarGps {
-    background-color: #fbc02d;
-    color: #333;
-}
-
-button#edit_btnZerarGps:hover {
-    background-color: #f9a825;
 }
 
 

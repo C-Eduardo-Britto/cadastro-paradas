@@ -296,3 +296,13 @@ button#edit_btnZerarGps:hover {
 }
 
 /* FIM DO ARQUIVO CSS */
+
+/* Estilo para a data de criação no card de registro */
+.registro .data-criacao {
+    font-size: 12px;
+    color: #888;
+    text-align: right;
+    margin: 0 0 10px 0; /* Ajusta a margem para ficar acima do título */
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee; /* Adiciona uma linha separadora sutil */
+}

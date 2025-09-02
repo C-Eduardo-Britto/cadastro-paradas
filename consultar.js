@@ -9,6 +9,45 @@ const SENHA_APAGAR = "apague";
 let fotosParaApagar = [];
 
 // --- FUNÇÕES REUTILIZÁVEIS ---
+
+// NOVA FUNÇÃO PARA FORMATAR A DATA DE FORMA INTELIGENTE
+function formatarData(dataIso) {
+    if (!dataIso) return { relativo: '', absoluto: '' };
+
+    const data = new Date(dataIso);
+    const agora = new Date();
+
+    // Formato absoluto (para o hover do mouse)
+    const optionsAbsoluto = {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        timeZone: 'America/Sao_Paulo'
+    };
+    const dataAbsoluta = new Intl.DateTimeFormat('pt-BR', optionsAbsoluto).format(data);
+    const tooltipAbsoluto = `Cadastrado em: ${dataAbsoluta}`;
+
+    // Formato relativo (para exibição principal)
+    const segundos = Math.round((agora - data) / 1000);
+    const minutos = Math.round(segundos / 60);
+    const horas = Math.round(minutos / 60);
+    const dias = Math.round(horas / 24);
+
+    if (segundos < 60) {
+        return { relativo: 'cadastrado agora mesmo', absoluto: tooltipAbsoluto };
+    } else if (minutos < 60) {
+        return { relativo: `cadastrado há ${minutos} min`, absoluto: tooltipAbsoluto };
+    } else if (horas < 24) {
+        return { relativo: `cadastrado há ${horas}h`, absoluto: tooltipAbsoluto };
+    } else if (dias === 1) {
+        return { relativo: 'cadastrado ontem', absoluto: tooltipAbsoluto };
+    } else if (dias < 7) {
+        return { relativo: `cadastrado há ${dias} dias`, absoluto: tooltipAbsoluto };
+    } else {
+        const optionsResumido = { year: '2-digit', month: '2-digit', day: '2-digit', timeZone: 'America/Sao_Paulo' };
+        return { relativo: `cadastrado em ${new Intl.DateTimeFormat('pt-BR', optionsResumido).format(data)}`, absoluto: tooltipAbsoluto };
+    }
+}
+
 async function uploadFotos(files) {
     const urlsDasFotos = [];
     const nomeDoBucket = 'fotos-paradas';
@@ -49,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data.forEach(parada => {
             const div = document.createElement('div');
             div.className = 'registro';
+            
             const checklistTexto = (parada.checklist || []).join(', ') || 'N/A';
             let botaoLocalizacaoHtml = '';
             const temGps = parada.latitude && parada.longitude;
@@ -58,7 +98,19 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 botaoLocalizacaoHtml = `<button class="btn-localizacao" disabled title="Sem GPS ou endereço cadastrado">Localização</button>`;
             }
-            div.innerHTML = `<h3>${parada.nome || 'Nome não informado'}</h3><p><strong>Contato:</strong> ${parada.nome_contato || 'N/A'} - ${parada.telefone || 'N/A'}</p><p><strong>Endereço:</strong> ${parada.logradouro || ''}, ${parada.numero || ''} - ${parada.cidade || ''}/${parada.uf || ''}</p><p><strong>Checklist:</strong> ${checklistTexto}</p><div class="botoes-registro">${botaoLocalizacaoHtml}<button class="btn-editar" data-id="${parada.id}">Editar</button><button class="btn-apagar" data-id="${parada.id}">Apagar</button></div>`;
+
+            // CHAMA A NOVA FUNÇÃO DE FORMATAÇÃO DE DATA
+            const dataFormatada = formatarData(parada.criado_em);
+
+            div.innerHTML = `
+                <p class="data-criacao" title="${dataFormatada.absoluto}">${dataFormatada.relativo}</p>
+
+                <h3>${parada.nome || 'Nome não informado'}</h3>
+                <p><strong>Contato:</strong> ${parada.nome_contato || 'N/A'} - ${parada.telefone || 'N/A'}</p>
+                <p><strong>Endereço:</strong> ${parada.logradouro || ''}, ${parada.numero || ''} - ${parada.cidade || ''}/${parada.uf || ''}</p>
+                <p><strong>Checklist:</strong> ${checklistTexto}</p>
+                <div class="botoes-registro">${botaoLocalizacaoHtml}<button class="btn-editar" data-id="${parada.id}">Editar</button><button class="btn-apagar" data-id="${parada.id}">Apagar</button></div>
+            `;
             container.appendChild(div);
         });
 
@@ -119,23 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (banheiroStatus) checklistFinal.push(`Banheiro: ${banheiroStatus}`);
         if (borrachariaStatus) checklistFinal.push(`Borracharia 24h: ${borrachariaStatus}`);
         checklistFinal.push(...outrosItens);
-
-        const dadosAtualizados = {
-            latitude: document.getElementById('edit_latitude').value || null,
-            longitude: document.getElementById('edit_longitude').value || null,
-            nome: document.getElementById('edit_nome').value,
-            nome_contato: document.getElementById('edit_nome_contato').value,
-            telefone: document.getElementById('edit_telefone').value,
-            cep: document.getElementById('edit_cep').value,
-            logradouro: document.getElementById('edit_logradouro').value,
-            numero: document.getElementById('edit_numero').value,
-            bairro: document.getElementById('edit_bairro').value,
-            cidade: document.getElementById('edit_cidade').value,
-            uf: document.getElementById('edit_uf').value,
-            observacoes: document.getElementById('edit_observacoes').value,
-            checklist: checklistFinal,
-        };
-        
+        const dadosAtualizados = { latitude: document.getElementById('edit_latitude').value || null, longitude: document.getElementById('edit_longitude').value || null, nome: document.getElementById('edit_nome').value, nome_contato: document.getElementById('edit_nome_contato').value, telefone: document.getElementById('edit_telefone').value, cep: document.getElementById('edit_cep').value, logradouro: document.getElementById('edit_logradouro').value, numero: document.getElementById('edit_numero').value, bairro: document.getElementById('edit_bairro').value, cidade: document.getElementById('edit_cidade').value, uf: document.getElementById('edit_uf').value, observacoes: document.getElementById('edit_observacoes').value, checklist: checklistFinal, };
         try {
             if (fotosParaApagar.length > 0) { const nomesDosArquivos = fotosParaApagar.map(url => url.split('/').pop()); await supabaseClient.storage.from('fotos-paradas').remove(nomesDosArquivos); }
             const novosArquivos = document.getElementById('edit_fotos').files;
@@ -143,14 +179,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (novosArquivos.length > 0) { novasUrls = await uploadFotos(novosArquivos); }
             const urlsFinais = (urlsAtuais || []).filter(url => !fotosParaApagar.includes(url)).concat(novasUrls);
             dadosAtualizados.fotos_urls = urlsFinais;
-
             const { error } = await supabaseClient.from('paradas').update(dadosAtualizados).eq('id', id);
             if (error) throw error;
-            
             alert("Parada atualizada com sucesso!");
             fecharModal();
             carregarParadas();
-
         } catch(error) {
             alert(`Erro ao atualizar: ${error.message}`);
             console.error(error);

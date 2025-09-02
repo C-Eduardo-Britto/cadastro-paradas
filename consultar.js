@@ -9,34 +9,18 @@ const SENHA_APAGAR = "apague";
 let fotosParaApagar = [];
 
 // --- FUNÇÕES REUTILIZÁVEIS ---
-async function uploadFotos(files) {
-    const urlsDasFotos = [];
-    const nomeDoBucket = 'fotos-paradas';
-    for (const file of Array.from(files)) {
-        const nomeDoArquivo = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-        const { error } = await supabaseClient.storage.from(nomeDoBucket).upload(nomeDoArquivo, file);
-        if (error) { console.error('Erro no upload da foto:', error); throw new Error(`Falha no upload do arquivo: ${file.name}`); }
-        const { data: { publicUrl } } = supabaseClient.storage.from(nomeDoBucket).getPublicUrl(nomeDoArquivo);
-        urlsDasFotos.push(publicUrl);
-    }
-    return urlsDasFotos;
-}
+async function uploadFotos(files) { const urlsDasFotos = []; const nomeDoBucket = 'fotos-paradas'; for (const file of Array.from(files)) { const nomeDoArquivo = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`; const { error } = await supabaseClient.storage.from(nomeDoBucket).upload(nomeDoArquivo, file); if (error) { console.error('Erro no upload da foto:', error); throw new Error(`Falha no upload do arquivo: ${file.name}`); } const { data: { publicUrl } } = supabaseClient.storage.from(nomeDoBucket).getPublicUrl(nomeDoArquivo); urlsDasFotos.push(publicUrl); } return urlsDasFotos; }
 function mascaraTelefone(e) { let v = e.target.value.replace(/\D/g, ""); if (v.length > 10) e.target.value = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3"); else e.target.value = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3"); }
 async function buscaCep(e) { let v = e.target.value.replace(/\D/g, ""); e.target.value = v.replace(/^(\d{5})(\d{0,3}).*/, "$1-$2"); if (v.length === 8) { try { const response = await fetch(`https://viacep.com.br/ws/${v}/json/`); const data = await response.json(); if (!data.erro) { document.getElementById("edit_logradouro").value = data.logradouro || ""; document.getElementById("edit_bairro").value = data.bairro || ""; document.getElementById("edit_cidade").value = data.localidade || ""; document.getElementById("edit_uf").value = data.uf || ""; document.getElementById("edit_numero").focus(); } else { alert("CEP não encontrado."); } } catch (err) { console.error("Erro ao buscar CEP:", err); alert("Não foi possível buscar o CEP."); } } }
 function mascaraUf(e) { e.target.value = e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase(); }
 function aplicarMascarasNoModal() { document.getElementById('edit_telefone').addEventListener('input', mascaraTelefone); document.getElementById('edit_cep').addEventListener('input', buscaCep); document.getElementById('edit_uf').addEventListener('input', mascaraUf); }
 
-// --- LÓGICA DO MODAL ---
+// --- FUNÇÕES DO MODAL ---
 const modal = document.getElementById('editModal');
 const editForm = document.getElementById('editForm');
 const modalCloseButton = document.querySelector('.modal-close');
 
-function fecharModal() {
-    modal.style.display = 'none';
-    editForm.innerHTML = '';
-    fotosParaApagar = [];
-}
-
+function fecharModal() { modal.style.display = 'none'; editForm.innerHTML = ''; fotosParaApagar = []; }
 modalCloseButton.addEventListener('click', fecharModal);
 window.addEventListener('click', function(event) { if (event.target == modal) { fecharModal(); } });
 
@@ -46,30 +30,36 @@ document.addEventListener('DOMContentLoaded', function() {
     async function carregarParadas() {
         const container = document.getElementById('lista-paradas');
         container.innerHTML = '<p>Carregando registros...</p>';
-        const { data, error } = await supabaseClient.from('paradas').select('*').order('criado_em', { ascending: false });
 
-        if (error) {
-            container.innerHTML = `<p style="color: red;">Erro ao carregar os registros: ${error.message}</p>`;
-            console.error(error);
-            return;
-        }
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p>Nenhuma parada cadastrada ainda.</p>';
-            return;
-        }
+        const { data, error } = await supabaseClient
+            .from('paradas').select('*').order('criado_em', { ascending: false });
+
+        if (error) { container.innerHTML = `<p style="color: red;">Erro ao carregar os registros: ${error.message}</p>`; console.error(error); return; }
+        if (!data || data.length === 0) { container.innerHTML = '<p>Nenhuma parada cadastrada ainda.</p>'; return; }
 
         container.innerHTML = '';
         data.forEach(parada => {
             const div = document.createElement('div');
             div.className = 'registro';
             const checklistTexto = (parada.checklist || []).join(', ') || 'N/A';
+
+            let botaoLocalizacaoHtml = '';
+            const temGps = parada.latitude && parada.longitude;
+            const temEndereco = parada.logradouro && parada.cidade;
+
+            if (temGps || temEndereco) {
+                botaoLocalizacaoHtml = `<button class="btn-localizacao" data-id="${parada.id}">Localização</button>`;
+            } else {
+                botaoLocalizacaoHtml = `<button class="btn-localizacao" disabled title="Sem GPS ou endereço cadastrado">Localização</button>`;
+            }
+
             div.innerHTML = `
                 <h3>${parada.nome || 'Nome não informado'}</h3>
                 <p><strong>Contato:</strong> ${parada.nome_contato || 'N/A'} - ${parada.telefone || 'N/A'}</p>
                 <p><strong>Endereço:</strong> ${parada.logradouro || ''}, ${parada.numero || ''} - ${parada.cidade || ''}/${parada.uf || ''}</p>
                 <p><strong>Checklist:</strong> ${checklistTexto}</p>
                 <div class="botoes-registro">
-                    <button class="btn-localizacao" data-id="${parada.id}">Localização</button>
+                    ${botaoLocalizacaoHtml}
                     <button class="btn-editar" data-id="${parada.id}">Editar</button>
                     <button class="btn-apagar" data-id="${parada.id}">Apagar</button>
                 </div>
@@ -77,11 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
             container.appendChild(div);
         });
 
-        // Adiciona os eventos de clique para os botões recém-criados
-        document.querySelectorAll('.btn-localizacao').forEach(button => {
-            button.addEventListener('click', () => {
-                window.open(`mapa.html?id=${button.dataset.id}`, '_blank');
-            });
+        document.querySelectorAll('.btn-localizacao:not([disabled])').forEach(button => {
+            button.addEventListener('click', () => { window.open(`mapa.html?id=${button.dataset.id}`, '_blank'); });
         });
         document.querySelectorAll('.btn-editar').forEach(button => {
             button.addEventListener('click', () => abrirModalEdicao(button.dataset.id));
@@ -93,31 +80,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function abrirModalEdicao(id) {
         const { data, error } = await supabaseClient.from('paradas').select('*').eq('id', id).single();
-        if (error || !data) {
-            alert("Não foi possível carregar os dados para edição.");
-            console.error(error);
-            return;
-        }
+        if (error || !data) { alert("Não foi possível carregar os dados para edição."); console.error(error); return; }
 
         editForm.innerHTML = `
             <input type="hidden" id="editId" value="${data.id}">
             <div class="section-title">Localização GPS</div>
-            <div class="action-buttons" style="margin-bottom: 15px;">
-                <button type="button" id="edit_btnLocalizacao">Capturar Coordenadas GPS</button>
-                <button type="button" id="edit_btnZerarGps">Zerar GPS</button>
-            </div>
-            <div class="form-row">
-                 <div class="form-group"><label for="edit_latitude">Latitude:</label><input type="text" id="edit_latitude" value="${data.latitude || ''}"></div>
-                 <div class="form-group"><label for="edit_longitude">Longitude:</label><input type="text" id="edit_longitude" value="${data.longitude || ''}"></div>
-            </div>
+            <div class="action-buttons" style="margin-bottom: 15px;"><button type="button" id="edit_btnLocalizacao">Capturar Coordenadas GPS</button><button type="button" id="edit_btnZerarGps">Zerar GPS</button></div>
+            <div class="form-row"><div class="form-group"><label for="edit_latitude">Latitude:</label><input type="text" id="edit_latitude" value="${data.latitude || ''}"></div><div class="form-group"><label for="edit_longitude">Longitude:</label><input type="text" id="edit_longitude" value="${data.longitude || ''}"></div></div>
             <div class="form-group"><label for="edit_nome">Nome do Posto / Ponto de Parada:</label><input type="text" id="edit_nome" value="${data.nome || ''}"></div>
             <div class="form-group"><label for="edit_nome_contato">Nome de Contato:</label><input type="text" id="edit_nome_contato" value="${data.nome_contato || ''}"></div>
             <div class="form-group"><label for="edit_telefone">Telefone:</label><input type="tel" id="edit_telefone" value="${data.telefone || ''}"></div>
-            <div class="section-title">Endereço</div>
-            <div class="form-group"><label for="edit_cep">CEP:</label><input type="text" id="edit_cep" value="${data.cep || ''}"></div>
-            <div class="form-group"><label for="edit_logradouro">Logradouro:</label><input type="text" id="edit_logradouro" value="${data.logradouro || ''}"></div>
-            <div class="form-row"><div class="form-group"><label for="edit_numero">Número:</label><input type="text" id="edit_numero" value="${data.numero || ''}"></div><div class="form-group"><label for="edit_bairro">Bairro:</label><input type="text" id="edit_bairro" value="${data.bairro || ''}"></div></div>
-            <div class="form-row"><div class="form-group"><label for="edit_cidade">Cidade:</label><input type="text" id="edit_cidade" value="${data.cidade || ''}"></div><div class="form-group"><label for="edit_uf">UF:</label><input type="text" id="edit_uf" value="${data.uf || ''}" maxlength="2"></div></div>
+            <div class="section-title">Endereço</div><div class="form-group"><label for="edit_cep">CEP:</label><input type="text" id="edit_cep" value="${data.cep || ''}"></div><div class="form-group"><label for="edit_logradouro">Logradouro:</label><input type="text" id="edit_logradouro" value="${data.logradouro || ''}"></div><div class="form-row"><div class="form-group"><label for="edit_numero">Número:</label><input type="text" id="edit_numero" value="${data.numero || ''}"></div><div class="form-group"><label for="edit_bairro">Bairro:</label><input type="text" id="edit_bairro" value="${data.bairro || ''}"></div></div><div class="form-row"><div class="form-group"><label for="edit_cidade">Cidade:</label><input type="text" id="edit_cidade" value="${data.cidade || ''}"></div><div class="form-group"><label for="edit_uf">UF:</label><input type="text" id="edit_uf" value="${data.uf || ''}" maxlength="2"></div></div>
             <div class="section-title">Estrutura do Local</div><div class="checklist" id="edit_checklist"></div>
             <div class="fotos-gerenciador"><div class="section-title">Fotos Salvas</div><div id="fotos-container"></div><div class="section-title">Adicionar Novas Fotos</div><input type="file" id="edit_fotos" multiple accept="image/*"></div>
             <div class="section-title">Observações</div><div class="form-group"><textarea id="edit_observacoes" rows="3">${data.observacoes || ''}</textarea></div>
@@ -134,7 +107,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('edit_btnLocalizacao').addEventListener('click', () => { if(navigator.geolocation){navigator.geolocation.getCurrentPosition(pos=>{document.getElementById("edit_latitude").value=pos.coords.latitude.toFixed(6);document.getElementById("edit_longitude").value=pos.coords.longitude.toFixed(6);alert("Coordenadas GPS atualizadas!")},err=>alert("Erro: "+err.message))}});
         document.getElementById('edit_btnZerarGps').addEventListener('click', () => { document.getElementById("edit_latitude").value = ""; document.getElementById("edit_longitude").value = ""; alert("Campos de GPS zerados. Salve as alterações para confirmar."); });
         aplicarMascarasNoModal();
-
         editForm.onsubmit = async (e) => { e.preventDefault(); await salvarEdicao(id, data.fotos_urls); };
         modal.style.display = 'flex';
     }
@@ -163,7 +135,6 @@ document.addEventListener('DOMContentLoaded', function() {
             observacoes: document.getElementById('edit_observacoes').value,
             checklist: checklistFinal,
         };
-        
         try {
             if (fotosParaApagar.length > 0) { const nomesDosArquivos = fotosParaApagar.map(url => url.split('/').pop()); await supabaseClient.storage.from('fotos-paradas').remove(nomesDosArquivos); }
             const novosArquivos = document.getElementById('edit_fotos').files;
@@ -174,7 +145,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const { error } = await supabaseClient.from('paradas').update(dadosAtualizados).eq('id', id);
             if (error) throw error;
-            
             alert("Parada atualizada com sucesso!");
             fecharModal();
             carregarParadas();

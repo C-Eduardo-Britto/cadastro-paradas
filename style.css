@@ -406,3 +406,14 @@ button#edit_btnZerarGps:hover {
         flex-direction: row;
     }
 }
+
+/* Estilo para botões inativos/desabilitados na lista de registros */
+.registro .botoes-registro button:disabled {
+    background-color: #cccccc; /* Fundo cinza */
+    cursor: not-allowed;     /* Cursor de "proibido" */
+    opacity: 0.7;            /* Levemente transparente */
+}
+
+.registro .botoes-registro button:disabled:hover {
+    background-color: #cccccc; /* Garante que a cor não mude no hover */
+}

@@ -12,7 +12,7 @@ async function initMap() {
     // 2. Busca todas as paradas no Supabase
     const { data: paradas, error } = await supabaseClient
         .from('paradas')
-        .select('*'); // Pega todos os dados do registro
+        .select('*');
 
     if (error) {
         console.error("Erro ao buscar paradas:", error);
@@ -30,65 +30,79 @@ async function initMap() {
         center: centroInicial,
     });
 
+    // NOVO: Inicializa o serviço de Geocoding do Google Maps
+    const geocoder = new google.maps.Geocoder();
+
     let marcadorFoco = null;
     let infoWindowFoco = null;
 
-    // 5. Cria um marcador (pino) para cada parada
+    // 5. Itera sobre cada parada para criar um marcador (pino)
     paradas.forEach(parada => {
-        if (!parada.latitude || !parada.longitude) {
-            return; // Pula o registro se não tiver coordenadas
-        }
+        
+        // Função interna para criar o pino e a janela de informações
+        // Isso evita repetição de código
+        const criarMarcador = (position) => {
+            const marker = new google.maps.Marker({
+                position: position,
+                map: map,
+                title: parada.nome,
+            });
 
-        const position = {
-            lat: parseFloat(parada.latitude),
-            lng: parseFloat(parada.longitude)
+            const checklistTexto = (parada.checklist || []).join(', ') || 'Nenhuma informação';
+            const enderecoTexto = `${parada.logradouro || ''}, ${parada.numero || ''} - ${parada.cidade || ''}/${parada.uf || ''}`;
+            const contatoTexto = `${parada.nome_contato || ''} - ${parada.telefone || 'N/A'}`;
+
+            const infoWindowContent = `
+                <div style="font-family: sans-serif; max-width: 250px; padding: 5px;">
+                    <h3 style="margin: 0 0 8px 0; color: #1b5e20;">${parada.nome}</h3>
+                    <p style="margin: 0 0 5px 0;"><strong>Contato:</strong> ${contatoTexto}</p>
+                    <p style="margin: 0 0 10px 0;"><strong>Endereço:</strong> ${enderecoTexto}</p>
+                    <p style="margin: 0; font-size: 13px; line-height: 1.4;"><strong>Estrutura:</strong> ${checklistTexto}</p>
+                </div>
+            `;
+
+            const infoWindow = new google.maps.InfoWindow({ content: infoWindowContent });
+
+            marker.addListener("click", () => {
+                infoWindow.open({ anchor: marker, map });
+            });
+
+            if (parada.id === paradaIdFoco) {
+                marcadorFoco = marker;
+                infoWindowFoco = infoWindow;
+            }
         };
 
-        const marker = new google.maps.Marker({
-            position: position,
-            map: map,
-            title: parada.nome,
-        });
-
-        // CORREÇÃO: Construir o conteúdo do InfoWindow com o nome do contato
-        const checklistTexto = (parada.checklist || []).join(', ') || 'Nenhuma informação';
-        const enderecoTexto = `${parada.logradouro || ''}, ${parada.numero || ''} - ${parada.cidade || ''}/${parada.uf || ''}`;
-        
-        // AQUI ESTÁ A MUDANÇA
-        const contatoTexto = `${parada.nome_contato || ''} - ${parada.telefone || 'N/A'}`;
-
-        const infoWindowContent = `
-            <div style="font-family: sans-serif; max-width: 250px; padding: 5px;">
-                <h3 style="margin: 0 0 8px 0; color: #1b5e20;">${parada.nome}</h3>
-                <p style="margin: 0 0 5px 0;"><strong>Contato:</strong> ${contatoTexto}</p>
-                <p style="margin: 0 0 10px 0;"><strong>Endereço:</strong> ${enderecoTexto}</p>
-                <p style="margin: 0; font-size: 13px; line-height: 1.4;"><strong>Estrutura:</strong> ${checklistTexto}</p>
-            </div>
-        `;
-
-        const infoWindow = new google.maps.InfoWindow({
-            content: infoWindowContent,
-        });
-
-        marker.addListener("click", () => {
-            infoWindow.open({
-                anchor: marker,
-                map,
+        // VERIFICA: A parada já tem coordenadas GPS?
+        if (parada.latitude && parada.longitude) {
+            const position = {
+                lat: parseFloat(parada.latitude),
+                lng: parseFloat(parada.longitude)
+            };
+            criarMarcador(position);
+        } 
+        // NOVO: Se não tiver GPS, mas tiver endereço, tenta localizar
+        else if (parada.logradouro && parada.cidade) {
+            const enderecoCompleto = `${parada.logradouro}, ${parada.numero}, ${parada.cidade}, ${parada.uf}`;
+            
+            geocoder.geocode({ 'address': enderecoCompleto }, (results, status) => {
+                if (status === 'OK') {
+                    // Se o Google encontrou o endereço, cria o pino com as coordenadas retornadas
+                    criarMarcador(results[0].geometry.location);
+                } else {
+                    console.warn(`Geocode falhou para o endereço "${enderecoCompleto}" pelo motivo: ${status}`);
+                }
             });
-        });
-
-        if (parada.id === paradaIdFoco) {
-            marcadorFoco = marker;
-            infoWindowFoco = infoWindow;
         }
     });
 
     // 6. Se encontramos um marcador para focar, centralizamos o mapa nele
-    if (marcadorFoco) {
-        map.setZoom(15);
-        map.setCenter(marcadorFoco.getPosition());
-        setTimeout(() => {
+    // Usamos um pequeno atraso para dar tempo das buscas de endereço (geocoding) terminarem
+    setTimeout(() => {
+        if (marcadorFoco) {
+            map.setZoom(15);
+            map.setCenter(marcadorFoco.getPosition());
             infoWindowFoco.open(map, marcadorFoco);
-        }, 500);
-    }
+        }
+    }, 1500); // 1.5 segundos de espera
 }

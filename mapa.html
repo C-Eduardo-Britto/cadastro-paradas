@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Paradas</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilo para o container do mapa ocupar a tela toda */
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        /* Remove margens e paddings para o mapa ocupar tudo */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="mapa.js"></script>
+    
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDca4Va__LvJ0kD0bEFREx8YCCazX1_yhI&callback=initMap"></script>
+    
+</body>
+</html>
